@@ -1,0 +1,20 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Smart Home System",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yogesh R. Jadhav",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "cluster": "^0.7.7",
+    "express": "^4.14.0",
+    "guid": "0.0.12",
+    "mongodb": "^2.2.10",
+    "socket.io": "^1.4.8",
+    "socket.io-redis": "^1.0.0"
+  }
+}

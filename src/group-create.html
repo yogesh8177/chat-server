@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Message</title>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+	<h1>Shawn Group Create</h1>
+	<script type="text/javascript">
+		var socket = io.connect();
+
+		socket.on('connected', function(msg){
+
+			socket.emit('connection-ack',{name:'Shawn', _id:'57e2fcce9aa41ecf182b7474', mobile: '0000000003', token:'hhhhh'});
+			var h3 = document.createElement('h3');
+			h3.innerText = msg.data;
+			document.body.appendChild(h3);
+		});
+
+		socket.on('message', function(msg){
+			var h3 = document.createElement('h3');
+			h3.innerText = msg.body;
+			document.body.appendChild(h3);
+		});
+
+		socket.on('group-message', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Id: "+msg._id+" "+msg.body;
+			document.body.appendChild(div);
+			socket.emit('group-message-delivery-ack', {_id:msg._id, user_id:'57e1509c8bfcdeb3fd7422b4'}); //Send acknowledge to sender that you received message
+		});
+//########################################################### Receiving ##################################################
+//Other person sends a message to you
+		socket.on('group-created', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Group created: "+msg._id;
+			document.body.appendChild(div);
+			socket.emit('group-create-id-received-ack', {group_id:msg._id, user_id:'57e2fcce9aa41ecf182b7474'}); //Send acknowledge to sender that you received message
+		});
+
+//Called when receiver receives message
+		socket.on('added-to-group', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Add to group: " + msg.name+ "at: "+msg.datetime;
+			document.body.appendChild(div);
+		});
+
+		socket.on('added-to-new-group', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Add to new group: " + msg.name+ " at: "+msg.datetime;
+			document.body.appendChild(div);
+		});
+
+		socket.on('group-members-added', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Members added to group: " + msg._id;
+			document.body.appendChild(div);
+		});
+
+		socket.on('group-members-removed', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Members removed from group by: " + msg.user_id + ", members:" + msg.members;
+			document.body.appendChild(div);
+		});
+
+		socket.on('user-connected', function(msg){
+			var h3 = document.createElement('h3');
+			h3.innerText = msg.user;
+			document.body.appendChild(h3);
+		});
+
+		function send(){
+			var message = document.getElementById('message').value;
+			socket.emit('group-create',{creator:'57e2fcce9aa41ecf182b7474', members:[{user_id:'57e1509c8bfcdeb3fd7422b4'},{user_id: '57e02a49637ff607295b8a12'}, {user_id: '57e029f6393e0452a93b9dc0'}, {user_id:'580cec9c436c9c150e9f9dd4'}], name:message});
+			/*socket.emit('remove-group-members',{user_id:'57e2fcce9aa41ecf182b7474', group_id:'5804b2e999a623178ca3b3fd', members:[{user_id:'5801f1fe06bce13e5f7fc876'},{user_id:'57e2fcce9aa41ecf182b7474'}], name:message});*/
+		}
+		
+	</script>
+
+	<input type="text" name="message" id="message">
+	<input type="button" name="Send" id="send" value="Send" onclick="send()">
+
+</body>
+</html>

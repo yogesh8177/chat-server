@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Message</title>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+	<h1>Sham Private Message</h1>
+	<script type="text/javascript">
+		var socket = io.connect();
+		var interval;
+
+		socket.on('connected', function(msg){
+
+			socket.emit('connection-ack',{name:'Sham', _id:'57e02a49637ff607295b8a12', mobile: '0000000001', token:'ggggg'});
+			var h3 = document.createElement('h3');
+			h3.innerText = msg.data;
+			document.body.appendChild(h3);
+		});
+
+		socket.on('message', function(msg){
+			var h3 = document.createElement('h3');
+			h3.innerText = msg.body;
+			document.body.appendChild(h3);
+		});
+
+		socket.on('private-message', function(msg){
+			var h2 = document.createElement('h2');
+			h2.innerText = msg.body;
+			document.body.appendChild(h2);
+			socket.emit('private-delivered-ack', {_id:msg._id});
+		});
+//Called when you post a message and server acknowledges
+		socket.on('private-posted', function(msg){
+			var div = document.createElement('div');
+			div.innerText = 'Posted: '+msg._id;
+			document.body.appendChild(div);
+			socket.emit('private-id-received', {_id: msg._id});
+		});
+
+		socket.on('private-delivery-receipt', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Delivered at:"+msg.datetime;
+			document.body.appendChild(div);
+		});
+
+//Other person sends a message to you
+		socket.on('group-message', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Id: "+msg._id+" "+msg.body;
+			document.body.appendChild(div);
+			socket.emit('group-message-delivery-ack', {_id:msg._id, user_id:'57e02a49637ff607295b8a12'});
+		});
+
+//Called when you post a message and server acknowledges
+		socket.on('group-posted', function(msg){
+			var div = document.createElement('div');
+			div.innerText = 'Posted: '+msg._id;
+			document.body.appendChild(div);
+			socket.emit('group-id-received', {_id: msg._id});
+		});
+
+		socket.on('group-delivery-receipt', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Delivered to: " + msg.delivered_to+ "at: "+msg.datetime;
+			document.body.appendChild(div);
+		});
+
+		socket.on('added-to-group', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Add to group: " + msg.name + " at: "+msg.datetime;
+			document.body.appendChild(div);
+		});
+
+		socket.on('added-to-new-group', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Add to new group: " + msg.name+ "at: "+msg.datetime;
+			document.body.appendChild(div);
+		});
+
+		socket.on('group-members-removed', function(msg){
+			var div = document.createElement('div');
+			div.innerText = "Members removed from group by: " + msg.user_id + ", members:" + msg.members;
+			document.body.appendChild(div);
+		});
+
+		socket.on('user-connected', function(msg){
+			var h3 = document.createElement('h3');
+			h3.innerText = msg.user;
+			document.body.appendChild(h3);
+		});
+
+		socket.on('group-typing', function(msg){
+			var div = document.getElementById('status');
+			div.innerText = 'Typing' + msg.user_id + " "+ new Date();
+			startTyping();
+		});
+
+		socket.on('status-changed', function(msg){
+			var div = document.createElement('div');
+			div.innerText = 'status: ' + msg.status + ", by: "+msg.user_id;
+			document.body.appendChild(div);
+			if(msg.category){
+				socket.emit('remove-pending',{_id: msg._id});
+			}
+		});
+
+
+		function send(){
+			var message = document.getElementById('message').value;
+			socket.emit('group-message',{from:'57e02a49637ff607295b8a12', group_id: '57ff43bbefebc65a3c9f5ce1', type:'normal', body:message});
+		}
+
+		function sendPrivate(){
+			var message = document.getElementById('message').value;
+			socket.emit('private-message',{from:'57e2fcce9aa41ecf182b7474', to: '57ff404ec82bb456d2d5b05e',type:'normal', body:message});
+		}
+
+		function typing(){
+			socket.emit('group-typing', {user_id: '57e02a49637ff607295b8a12', group_id: '57f4d3851c98e2589ae728d4'});
+		}
+		function startTyping(){
+			clearInterval(interval);
+				interval = setInterval(function(){
+				var div = document.getElementById('status');
+				div.innerText = '...';
+			},2000);
+		}
+	</script>
+	<div id="status"></div>
+	<input type="text" name="message" id="message" onkeypress="typing()">
+	<input type="button" name="Send" id="send" value="Send" onclick="send()">
+
+</body>
+</html>
